@@ -202,7 +202,8 @@ workflows:
           context:
             - Env
       - build-backend:
-          context: Env
+          context:
+            - Env
       - test-frontend:
           requires: [build-frontend]
       - test-backend:
@@ -214,4 +215,5 @@ workflows:
   send-notification:
     jobs:
       - notify:
-          context: Env
+          context:
+            - Env
