@@ -1,6 +1,20 @@
 version: 2.1
+orbs:
+  slack: circleci/slack@4.10.1
 
 commands:
+  notify_slack_error:
+    steps:
+      - slack/notify:
+          event: fail
+          template: basic_fail_1
+
+  notify_slack_pass:
+    steps:
+      - slack/notify:
+          event: pass
+          template: basic_success_1
+
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     # parameters:
@@ -33,6 +47,47 @@ commands:
             fi
 
 jobs:
+  notify:
+    docker:
+      - image: "cimg/base:stable"
+    steps:
+      - slack/notify:
+          custom: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": [
+                    {
+                      "type": "plain_text",
+                      "text": "*An error occur with your CircleCI Job*",
+                      "emoji": true
+                    }
+                  ]
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "image",
+                      "image_url": "https://api.slack.com/img/blocks/bkb_template_images/notificationsWarningIcon.png",
+                      "alt_text": "notifications warning icon"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Conflicts with Job On CircleCi: 4:15-4:30pm*"
+                    }
+                  ]
+                },
+                {
+                  "type": "divider"
+                }
+              ]
+            }
+          event: always
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -140,35 +195,23 @@ jobs:
           paths: [backend/node_modules]
           key: backend-scan
 
-cleanup:
-  docker:
-    # Docker image here
-  steps:
-    # Checkout code from git
-    - run:
-        name: Get old stack workflow id
-        command: |
-          # your code here
-          export OldWorkflowID="the id here"
-          export STACKS=[] #put the list of stacks here
-    - run:
-        name: Remove old stacks and files
-        command: |
-          if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-          then
-            # your code here
-          fi
-
 workflows:
   default:
     jobs:
-      - build-frontend
-      - build-backend
+      - build-frontend:
+          context:
+            - Env
+      - build-backend:
+          context: Env
       - test-frontend:
           requires: [build-frontend]
       - test-backend:
           requires: [build-backend]
-      - scan-frontend:
-          requires: [build-frontend]
       - scan-backend:
           requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
+  send-notification:
+    jobs:
+      - notify:
+          context: Env
