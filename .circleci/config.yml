@@ -3,18 +3,7 @@ orbs:
   slack: circleci/slack@4.10.1
 
 commands:
-  notify_slack_error:
-    steps:
-      - slack/notify:
-          event: fail
-          template: basic_fail_1
-
-  notify_slack_pass:
-    steps:
-      - slack/notify:
-          event: pass
-          template: basic_success_1
-
+  
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     # parameters:
@@ -75,7 +64,7 @@ jobs:
                     },
                     {
                       "type": "mrkdwn",
-                      "text": "*Conflicts with Job On CircleCi: 4:15-4:30pm*"
+                      "text": "*Conflicts with Job On CircleCi*"
                     }
                   ]
                 }
@@ -132,6 +121,14 @@ jobs:
             cd frontend
             npm install
             npm run test
+      - slack/notify:
+          event: fail
+          mentions: '@EngineeringTeam'
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          mentions: '@EngineeringTeam'
+          template: basic_success_1
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-test
@@ -149,6 +146,14 @@ jobs:
             cd backend
             npm install
             npm run test
+      - slack/notify:
+          event: fail
+          mentions: '@EngineeringTeam'
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          mentions: '@EngineeringTeam'
+          template: basic_success_1
       - save_cache:
           paths: [backend/node_modules]
           key: backend-test
@@ -167,6 +172,14 @@ jobs:
             npm install
             npm audit fix --audit-level=critical --force
             npm audit --audit-level=critical
+      - slack/notify:
+          event: fail
+          mentions: '@EngineeringTeam'
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          mentions: '@EngineeringTeam'
+          template: basic_success_1
       - save_cache:
           paths: [frontend/node_modules]
           key: frontend-scan
@@ -185,27 +198,35 @@ jobs:
             npm install
             npm audit fix --audit-level=critical --force
             npm audit --audit-level=critical
+      - slack/notify:
+          event: fail
+          mentions: '@EngineeringTeam'
+          template: basic_fail_1
+      - slack/notify:
+          event: pass
+          mentions: '@EngineeringTeam'
+          template: basic_success_1
       - save_cache:
           paths: [backend/node_modules]
           key: backend-scan
 
 workflows:
-  # default:
-  #   jobs:
-  #     - build-frontend:
-  #         context:
-  #           - Env
-  #     - build-backend:
-  #         context:
-  #           - Env
-  #     - test-frontend:
-  #         requires: [build-frontend]
-  #     - test-backend:
-  #         requires: [build-backend]
-  #     - scan-backend:
-  #         requires: [build-backend]
-  #     - scan-frontend:
-  #         requires: [build-frontend]
+  default:
+    jobs:
+      - build-frontend:
+          context:
+            - Env
+      - build-backend:
+          context:
+            - Env
+      - test-frontend:
+          requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
   send-notification:
     jobs:
       - notify:
