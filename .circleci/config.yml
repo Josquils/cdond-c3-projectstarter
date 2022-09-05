@@ -191,8 +191,3 @@ workflows:
           context:
             - Env
           requires: [build-frontend]
-  send-notification:
-    jobs:
-      - notify:
-          context:
-            - Env
