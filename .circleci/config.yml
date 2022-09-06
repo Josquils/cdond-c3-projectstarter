@@ -240,7 +240,7 @@ jobs:
       # Here's where you will add some code to rollback on failure
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
-  
+
   run-migrations:
     docker:
       # Docker image here that supports NodeJS
@@ -265,9 +265,9 @@ jobs:
             then
                 curl --insecure https://kvdb.io/KYQ2reGGHXFaobgbTnRiBk/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '1'
             fi
-     # Here's where you will add some code to rollback on failure
+      # Here's where you will add some code to rollback on failure
       - destroy-environment:
-            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - notify_slack_error
       - notify_slack_pass
 
@@ -286,7 +286,7 @@ jobs:
             apk add --update --no-cache nodejs
             apk add --update --no-cache npm
             apk add --update --no-cache aws-cli
-            apk add --update --no-cache curl 
+            apk add --update --no-cache curl
       - run:
           name: Get backend url
           command: |
@@ -305,14 +305,13 @@ jobs:
             npm install
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
-            aws s3 cp dist s3://udapeople-t7mlub --recursive 
-            
+            aws s3 cp dist s3://udapeople-t7mlub --recursive
+
       # Here's where you will add some code to rollback on failure
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
-            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
-
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   deploy-backend:
     docker:
@@ -323,7 +322,7 @@ jobs:
       - checkout
       # Add ssh keys with fingerprint
       - add_ssh_keys:
-         fingerprints:
+          fingerprints:
             - "7f:1c:9d:b9:bd:49:e0:f7:9b:66:13:29:ab:c0:10:e5"
       # attach workspace
       - attach_workspace:
@@ -349,7 +348,7 @@ jobs:
             echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> ".env"
             echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> ".env"
             echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> ".env"
-            
+
             pwd
             ls -al
             npm install
@@ -367,12 +366,12 @@ jobs:
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
-            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   smoke-test:
     docker:
       # Lightweight Docker image
-      - image: python:3.10-alpine3.16 
+      - image: python:3.10-alpine3.16
     steps:
       # Checkout code from git
       - checkout
@@ -388,9 +387,9 @@ jobs:
             --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
             --output text)
             echo ${BACKEND_IP}
-            
+
             export BACKEND=$(echo $BACKEND_IP | grep -o '[^ ]*$')
-            
+
             echo $BACKEND
             export API_URL="http://${BACKEND}:3030"
             echo "API_URL=${API_URL}"
@@ -402,7 +401,7 @@ jobs:
               return 0
             else
               return 1
-            fi 
+            fi
       - run:
           name: Frontend smoke test.
           command: |
@@ -415,11 +414,11 @@ jobs:
             else
               return 1
             fi
-      
+
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
-            workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+          workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
 
   cloudfront-update:
     docker:
@@ -538,15 +537,15 @@ workflows:
           context:
             - Env
           requires: [run-migrations]
-      - smoke-test: 
+      - smoke-test:
           context:
             - Env
           requires: [deploy-backend, deploy-frontend]
-      - cloudfront-update: 
+      - cloudfront-update:
           context:
             - Env
           requires: [smoke-test]
-      - cleanup: 
+      - cleanup:
           context:
             - Env
           requires: [cloudfront-update]
