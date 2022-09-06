@@ -218,8 +218,6 @@ jobs:
     steps:
       # Checkout code from git
       - checkout
-      - run: sudo apt update && sudo apt upgrade
-      - run: sudo apt install curl
       # Add ssh keys with fingerprint
       - add_ssh_keys:
           fingerprints:
@@ -242,8 +240,6 @@ jobs:
       # Here's where you will add some code to rollback on failure
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
-      - notify_slack_error
-      - notify_slack_pass
   
   run-migrations:
     docker:
@@ -279,8 +275,6 @@ jobs:
       - image: python:3.10-alpine3.16
     steps:
       - checkout
-      - run: sudo apt update && sudo apt upgrade
-      - run: sudo apt install curl
       - attach_workspace:
           at: ~/
       - run:
@@ -317,8 +311,6 @@ jobs:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
             workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
-      - notify_slack_error
-      - notify_slack_pass
 
 
   deploy-backend:
@@ -328,8 +320,6 @@ jobs:
     steps:
       # Checkout code from git
       - checkout
-      - run: sudo apt update && sudo apt upgrade
-      - run: sudo apt install curl
       # Add ssh keys with fingerprint
       - add_ssh_keys:
          fingerprints:
@@ -377,8 +367,6 @@ jobs:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
       - revert-migrations:
             workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
-      - notify_slack_error
-      - notify_slack_pass
 
 
   cleanup:
@@ -415,8 +403,6 @@ jobs:
             else
               echo "Stack is the latest"
             fi
-      - notify_slack_error
-      - notify_slack_pass
 
 workflows:
   default:
