@@ -251,10 +251,14 @@ jobs:
       - restore_cache:
           keys: [backend-build]
       - run:
+          name: Install dependencies
+          command: |
+            apk add --update --no-cache nodejs npm aws-cli
+      - run:
           name: Run migrations
           command: |
             cd backend
-            # sudo npm install -g npm
+            sudo npm install -g npm
             npm run migrations > migrations_dump.txt
             cat migrations_dump.txt
       - run:
@@ -432,7 +436,7 @@ workflows:
       - deploy-infrastructure:
           context:
             - Env
-          requires: [scan-frontend, scan-backend]
+          requires: [scan-frontend, scan-backend, build-frontend, build-backend]
       - configure-infrastructure:
           context:
             - Env
