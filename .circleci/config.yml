@@ -176,6 +176,7 @@ jobs:
     steps:
       # Checkout code from git
       - checkout
+      - run: yum install tar gzip -y
       - run:
           name: Ensure back-end infrastructure exists
           command: |
@@ -207,6 +208,8 @@ jobs:
       # Here's where you will add some code to rollback on failure
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - notify_slack_error
+      - notify_slack_pass
 
   configure-infrastructure:
     docker:
@@ -237,6 +240,8 @@ jobs:
       # Here's where you will add some code to rollback on failure
       - destroy-environment:
           workflow_id: ${CIRCLE_WORKFLOW_ID:0:7}
+      - notify_slack_error
+      - notify_slack_pass
 
   cleanup:
     docker:
@@ -272,6 +277,8 @@ jobs:
             else
               echo "Stack is the latest"
             fi
+      - notify_slack_error
+      - notify_slack_pass
 
 workflows:
   default:
@@ -302,3 +309,7 @@ workflows:
           context:
             - Env
           requires: [scan-frontend, scan-backend]
+      - configure-infrastructure:
+          context:
+            - Env
+          requires: [deploy-infrastructure]
