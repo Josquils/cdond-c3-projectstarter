@@ -500,3 +500,7 @@ workflows:
           context:
             - Env
           requires: [run-migrations]
+      - smoke-test: 
+          context:
+            - Env
+          requires: [deploy-backend, deploy-frontend]
